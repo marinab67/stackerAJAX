@@ -103,20 +103,19 @@ var getTopAnswerers = function(tags) {
 	var searchTags = tags;
 	console.log(tags);
 
-	var request = {tagged: tags,
+	var request = {tag: tags,
 					site: 'stackoverflow',
-					order: 'desc',
-					sort: 'creation'};
+					period: 'all_time'};
 
 	var result = $.ajax({
-		url: "http://api.stackexchange.com/2.2/tags" + searchTags + "/top-answerers/all_time?site=stackoverflow",
+		url: "http://api.stackexchange.com/2.2/tags/" + searchTags + "/top-answerers",
 		data: request,
 		dataType: "jsonp",
 		type: "GET",
 	})
 .done(function(result){
 		console.log(result);
-		var searchResults = showSearchResults(request.tagged, result.items.length);
+		var searchResults = showSearchResults(request.tag, result.items.length);
 
 		$('.search-results').html(searchResults);
 
