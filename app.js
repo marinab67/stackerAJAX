@@ -6,7 +6,17 @@ $(document).ready( function() {
 		var tags = $(this).find("input[name='tags']").val();
 		getUnanswered(tags);
 	});
+
+	$('.inspiration-getter').submit (function(event) { 
+		event.preventDefault();
+		$('.results').html(''); 
+		var tags = $(this).find("input[name='answerers']").val();
+		getTopAnswerers(tags);
+
+	});
 });
+	
+
 
 // this function takes the question object returned by StackOverflow 
 // and creates new result to be appended to DOM
@@ -88,5 +98,39 @@ var getUnanswered = function(tags) {
 	});
 };
 
+var getTopAnswerers = function(tags) {
 
+	var searchTags = tags;
+	console.log(tags);
+
+	var request = {tagged: tags,
+					site: 'stackoverflow',
+					order: 'desc',
+					sort: 'creation'};
+
+	var result = $.ajax({
+		url: "http://api.stackexchange.com/2.2/tags" + searchTags + "/top-answerers/all_time?site=stackoverflow",
+		data: request,
+		dataType: "jsonp",
+		type: "GET",
+	})
+.done(function(result){
+		console.log(result);
+		var searchResults = showSearchResults(request.tagged, result.items.length);
+
+		$('.search-results').html(searchResults);
+
+		$.each(result.items, function(i, item) {
+			var question = showQuestion(item);
+			$('.results').append(question);
+		});
+	})
+	.fail(function(jqXHR, error, errorThrown){
+		var errorElem = showError(error);
+		$('.search-results').append(errorElem);
+	});
+	
+
+
+};
 
