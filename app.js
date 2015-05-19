@@ -6,7 +6,17 @@ $(document).ready( function() {
 		var tags = $(this).find("input[name='tags']").val();
 		getUnanswered(tags);
 	});
+
+	$('.inspiration-getter').submit (function(event) { 
+		event.preventDefault();
+		$('.results').html(''); 
+		var tags = $(this).find("input[name='answerers']").val();
+		getTopAnswerers(tags);
+
+	});
 });
+	
+
 
 // this function takes the question object returned by StackOverflow 
 // and creates new result to be appended to DOM
@@ -19,6 +29,8 @@ var showQuestion = function(question) {
 	var questionElem = result.find('.question-text a');
 	questionElem.attr('href', question.link);
 	questionElem.text(question.title);
+	console.log(question.link);
+	console.log(question.title);
 
 	// set the date asked property in result
 	var asked = result.find('.asked-date');
@@ -40,6 +52,26 @@ var showQuestion = function(question) {
 
 	return result;
 };
+
+var showAnswerers = function(answerer) { 
+	var result = $(".templates .answerer").clone();
+
+	// Set the answerer properties in result
+	var answererName = result.find('.answerer-name a');
+	answererName.attr('href', answerer.user.link);
+	answererName.text(answerer.user.display_name);
+
+	// set the percent accepted property in result
+	var percentAccepted = result.find('.percent-accepted');
+	percentAccepted.text(answerer.user.accept_rate);
+
+	// set the reputation property in result
+	var answererReputation = result.find('.reputation');
+	answererReputation.text(answerer.user.reputation);
+
+	return result;
+
+}
 
 
 // this function takes the results object from StackOverflow
@@ -73,6 +105,7 @@ var getUnanswered = function(tags) {
 		type: "GET",
 		})
 	.done(function(result){
+		console.log(result);
 		var searchResults = showSearchResults(request.tagged, result.items.length);
 
 		$('.search-results').html(searchResults);
@@ -88,5 +121,39 @@ var getUnanswered = function(tags) {
 	});
 };
 
+var getTopAnswerers = function(tags) {
 
+	var searchTags = tags;
+	console.log(tags);
+
+	var request = {tag: tags,
+					site: 'stackoverflow',
+					period: 'all_time'};
+
+	var result = $.ajax({
+		url: "http://api.stackexchange.com/2.2/tags/" + searchTags + "/top-answerers/all_time",
+		data: request,
+		dataType: "jsonp",
+		type: "GET",
+	})
+.done(function(result){
+		console.log(result);
+		var searchResults = showSearchResults(request.tag, result.items.length);
+		console.log(searchResults);
+
+		$('.search-results').html(searchResults);
+
+		$.each(result.items, function(i, item) {
+			var answerer = showAnswerers(item);
+			$('.results').append(answerer);
+		});
+	})
+	.fail(function(jqXHR, error, errorThrown){
+		var errorElem = showError(error);
+		$('.search-results').append(errorElem);
+	});
+	
+
+
+};
 
